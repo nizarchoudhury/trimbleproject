@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maps-sdk.trimblemaps.com/v3/trimblemaps-3.16.0.css" />
+        <script src="https://maps-sdk.trimblemaps.com/v3/trimblemaps-3.16.0.js"></script>
+        <style>
+            body { margin: 0; padding: 0; }
+
+           #menu {
+              position: absolute;
+              top: 0;
+              right: 0;
+              background: #fff;
+              padding: 10px;
+              font-family: 'Open Sans', sans-serif;      }
+
+          #controls {
+             position: absolute;
+             top: 200px;
+             right: 10px;
+              margin: 20px;
+                      }
+
+            #map {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 100%;
+            }
+
+ /* html for popup */
+        .map-panel {
+            position: absolute;
+            width: 225px;
+            top: 10px;
+            left: 10px;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: .85em;
+        }
+
+        .group {
+            padding: 3px 0;
+        }
+
+        .group .label {
+            display: inline-block;
+            width: 65px;
+            font-style: italic;
+            color: #888;
+        }
+
+        .group .value {
+            display: inline-block;
+        }
+
+        </style>
+    </head>
+    <body>
+    <div id="map"> </div>
+    <div class="map-panel">
+          <div class="group">
+            <span class="label">Longitude:</span>
+            <span id="longitude" class="value"> </span>
+          </div>
+          <div class="group">
+            <span class="label">Latitude:</span>
+            <span id="latitude" class="value"> </span>
+          </div>
+        </div>
+
+      <div id="menu">
+                 <input id="transportation"
+                   type="radio"
+                   name="rtoggle"
+                   value="TRANSPORTATION"
+                   checked="checked"
+                 />
+                 <label for="transportation">transportation</label>
+                 <br />
+                 <input id="transportationdark"
+                   type="radio"
+                   name="rtoggle"
+                   value="TRANSPORTATION_DARK"
+                 />
+                 <label for="transportationdark">transportation_dark</label>
+                 <br />
+                 <input id="basic" type="radio" name="rtoggle" value="BASIC" />
+                 <label for="basic">basic</label>
+                 <br />
+                 <input id="basicdark" type="radio" name="rtoggle" value="BASIC_DARK" />
+                 <label for="basicdark">basic_dark</label>
+                 <br />
+                 <input id="datalight" type="radio" name="rtoggle" value="DATALIGHT" />
+                 <label for="datalight">datalight</label>
+                 <br />
+                 <input id="datadark" type="radio" name="rtoggle" value="DATADARK" />
+                 <label for="datadark">datadark</label>
+                 <br />
+                 <input id="accessiblelight" type="radio" name="rtoggle" value="ACCESSIBLE_LIGHT" />
+                 <label for="accessiblelight">accessible</label>
+                 <br />
+                 <input id="terrain" type="radio" name="rtoggle" value="TERRAIN" />
+                 <label for="terrain">terrain</label>
+                 <br />
+                 <input id="satellite" type="radio" name="rtoggle" value="SATELLITE" />
+                 <label for="satellite">satellite</label>
+                 <br />
+
+    </div>
+
+<!-- State Selector -->
+    <div id="controls">
+            <label for="state-select">Select a state:</label>
+            <select id="state-select">
+                <option value="OFF">None</option>
+                <option value="NJ">New Jersey</option>
+                <option value="NY">New York</option>
+                <option value="PA">Pennsylvania</option>
+                <!-- Add more states as needed -->
+            </select>
+        </div>
+       <script src="/Users/nizarchoudhury/Desktop/trimbleproject/script.js"> </script>
+
+    </body>
+</html>

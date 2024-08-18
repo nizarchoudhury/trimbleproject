@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://maps-sdk.trimblemaps.com/v3/trimblemaps-3.16.0.css" />
+    <script src="https://maps-sdk.trimblemaps.com/v3/trimblemaps-3.16.0.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #menu {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #fff;
+            padding: 10px;
+            font-family: 'Open Sans', sans-serif;
+        }
+        #controls {
+            position: absolute;
+            top: 200px;
+            right: 10px;
+            margin: 20px;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        .map-panel {
+            position: absolute;
+            width: 225px;
+            top: 10px;
+            left: 10px;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: .85em;
+        }
+        .group {
+            padding: 3px 0;
+        }
+        .group .label {
+            display: inline-block;
+            width: 65px;
+            font-style: italic;
+            color: #888;
+        }
+        .group .value {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<div class="map-panel">
+    <div class="group">
+        <span class="label">Longitude:</span>
+        <span id="longitude" class="value"></span>
+    </div>
+    <div class="group">
+        <span class="label">Latitude:</span>
+        <span id="latitude" class="value"></span>
+    </div>
+</div>
+<div id="menu">
+    <input id="transportation" type="radio" name="rtoggle" value="TRANSPORTATION" checked="checked" />
+    <label for="transportation">transportation</label>
+    <br />
+    <input id="transportationdark" type="radio" name="rtoggle" value="TRANSPORTATION_DARK" />
+    <label for="transportationdark">transportation_dark</label>
+    <br />
+    <input id="basic" type="radio" name="rtoggle" value="BASIC" />
+    <label for="basic">basic</label>
+    <br />
+    <input id="basicdark" type="radio" name="rtoggle" value="BASIC_DARK" />
+    <label for="basicdark">basic_dark</label>
+    <br />
+    <input id="datalight" type="radio" name="rtoggle" value="DATALIGHT" />
+    <label for="datalight">datalight</label>
+    <br />
+    <input id="datadark" type="radio" name="rtoggle" value="DATADARK" />
+    <label for="datadark">datadark</label>
+    <br />
+    <input id="accessiblelight" type="radio" name="rtoggle" value="ACCESSIBLE_LIGHT" />
+    <label for="accessiblelight">accessible</label>
+    <br />
+    <input id="terrain" type="radio" name="rtoggle" value="TERRAIN" />
+    <label for="terrain">terrain</label>
+    <br />
+    <input id="satellite" type="radio" name="rtoggle" value="SATELLITE" />
+    <label for="satellite">satellite</label>
+    <br />
+</div>
+<!-- State Selector -->
+<div id="controls">
+    <label for="state-select">Select a state:</label>
+    <select id="state-select">
+        <option value="">None</option>
+        <option value="NJ">New Jersey</option>
+        <option value="NY">New York</option>
+        <option value="PA">Pennsylvania</option>
+        <!-- Add more states as needed -->
+    </select>
+</div>
+
+<script>
+    TrimbleMaps.APIKey = 'F61E9A1295D8A342A868030A51DC3CA6';
+
+    // Change appearance
+    const layerList = document.getElementById('menu');
+    const inputs = layerList.getElementsByTagName('input');
+
+    function switchLayer(elem) {
+        const styleId = elem.target.value;
+        map.setStyle(TrimbleMaps.Common.Style[styleId]);
+    }
+
+    for (let i = 0; i < inputs.length; i++) {
+        inputs[i].onclick = switchLayer;
+    }
+
+    // JavaScript for map
+    const center = [-74.406853, 40.3709];
+    const map = new TrimbleMaps.Map({
+        container: 'map', // container id
+        style: TrimbleMaps.Common.Style.TRANSPORTATION, // hosted style id
+        center: [-75, 40], // starting position
+        zoom: 8 // starting zoom
+    });
+
+    // Script for draggable popup
+    // Create a popup
+    const popup = new TrimbleMaps.Popup({
+        offset: 40 // move around to map 4 borders, you will see its location changes.
+    }).setText('This is a cool popup. Look for coordinates in the top left.');
+
+    // Create a marker
+    const marker = new TrimbleMaps.Marker({
+        draggable: true
+    }).setLngLat(center)
+        .setPopup(popup)
+        .addTo(map);
+
+    // Save the panel elements
+    const lngElem = document.getElementById('longitude');
+    const latElem = document.getElementById('latitude');
+    lngElem.innerHTML = center[0].toFixed(6);
+    latElem.innerHTML = center[1].toFixed(6);
+
+    // Listen to the dragend event of the marker
+    marker.on('dragend', function (e) {
+        // Extract the lngLat object from the marker in the event
+        const lngLat = e.target.getLngLat();
+        // Update the values in the panel
+        lngElem.innerHTML = lngLat.lng.toFixed(6);
+        latElem.innerHTML = lngLat.lat.toFixed(6);
+    });
+
+    // Routing script
+    const myRoute = new TrimbleMaps.Route({
+        routeId: "myRoute",
+        isDraggable: true,
+        stops: [
+            new TrimbleMaps.LngLat(-74.451328, 40.50251),
+            new TrimbleMaps.LngLat(-74.5555, 40.0000),
+            new TrimbleMaps.LngLat(-74.629749, 40.26118)
+        ]
+    });
+    map.on('load', function () {
+        myRoute.addTo(map);
+    });
+
+    // Function to call the REST API, filter the parameter, and rearrange coordinates
+    async function fetchAndProcessData(state) {
+        const apiUrl = `https://pcmiler.alk.com/apis/rest/v1.0/Service.svc/polygons/state?states=${state}`;
+        const apiKey = 'F61E9A1295D8A342A868030A51DC3CA6';
+
+        try {
+            // Call the REST API
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${apiKey}`
+                }
+            });
+
+            // Check if the response is ok (status code 200-299)
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // Parse the JSON response
+            const data = await response.json();
+
+            // Extract and process only the coordinates from the Polygon parameter
+            const coordinatesArray = data.map(item => {
+                const polygonString = item.Polygon;
+
+                // Assuming polygonString is in the format "POLYGON((x1 y1, x2 y2, ...))"
+                const matches = polygonString.match(/\(\((.*?)\)\)/);
+                if (matches) {
+                    return matches[1].split(',').map(coord => {
+                        const [x, y] = coord.trim().split(' ').map(Number);
+                        if (isNaN(x) || isNaN(y)) {
+                            console.warn(`Invalid coordinate pair found: ${coord}`);
+                            return null;  // Return null for invalid coordinates
+                        }
+                        return [x, y];
+                    }).filter(coord => coord !== null); // Filter out null values
+                } else {
+                    throw new Error('Invalid Polygon format');
+                }
+            });
+
+            // Return the coordinates array
+            return coordinatesArray[0]; // Assuming we only need the first polygon
+        } catch (error) {
+            // Handle errors
+            console.error('Error fetching or processing data:', error);
+            return null;
+        }
+    }
+
+    // Function to integrate GeoJSON data into the map
+    async function integrateGeoJson(state) {
+        if (!state) {
+            // Clear any existing layers if no state is selected
+            if (map.getSource('hqSource')) {
+                map.removeSource('hqSource');
+            }
+            if (map.getLayer('hqPoly')) {
+                map.removeLayer('hqPoly');
+            }
+            if (map.getLayer('hqoutline')) {
+                map.removeLayer('hqoutline');
+            }
+            return;
+        }
+
+        const geoCoordinates = await fetchAndProcessData(state);
+        if (geoCoordinates) {
+            // Construct the GeoJSON data object
+            const geoJsonData = {
+                type: 'geojson',
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: [geoCoordinates] // Wrap the coordinates in another array
+                        }
+                    }]
+                }
+            };
+
+            // Output the GeoJSON data for debugging purposes
+            console.log('GeoJSON Data:', JSON.stringify(geoJsonData, null, 2));
+
+            // Assuming you have a map instance already created and available as `map`
+            if (map.getSource('hqSource')) {
+                map.removeSource('hqSource');
+            }
+            map.addSource('hqSource', geoJsonData);
+
+            // Add a layer to draw the polygon
+            if (map.getLayer('hqPoly')) {
+                map.removeLayer('hqPoly');
+            }
+            map.addLayer({
+                id: 'hqPoly',
+                type: 'fill',
+                source: 'hqSource',
+                paint: {
+                    'fill-color': '#000',
+                    'fill-opacity': 0.5
+                }
+            });
+
+            // Add a black outline around the polygon
+            if (map.getLayer('hqoutline')) {
+                map.removeLayer('hqoutline');
+            }
+            map.addLayer({
+                id: 'hqoutline',
+                type: 'line',
+                source: 'hqSource',
+                layout: {},
+                paint: {
+                    'line-color': '#000',
+                    'line-width': 3
+                }
+            });
+        } else {
+            console.error('No valid geoCoordinates available.');
+        }
+    }
+
+    // Event listener for state selection
+    document.getElementById('state-select').addEventListener('change', (event) => {
+        const selectedState = event.target.value;
+        integrateGeoJson(selectedState);
+    });
+
+    // Initial state load
+    integrateGeoJson(document.getElementById('state-select').value);
+</script>
+</body>
+</html>
